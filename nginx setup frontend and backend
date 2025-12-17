@@ -1,0 +1,72 @@
+#nginx setup with backend and frontend domain
+#!/bin/bash
+
+sudo -i <<'EOF'
+
+# Update package list
+apt update
+
+# Install nginx
+apt install -y nginx
+
+# Enable firewall and allow ssh & nginx
+ufw --force enable
+ufw allow ssh
+ufw allow 'Nginx Full'
+
+# Check firewall status
+ufw status
+
+# Restart nginx
+systemctl restart nginx
+
+# Create nginx config for frontend and backend subdomains
+cat <<'EOT' > /etc/nginx/sites-available/radzsantillan
+# Frontend subdomain
+server {
+    listen 80;
+    listen [::]:80;
+
+    server_name app.radzsantillan.site;
+
+    location / {
+        proxy_pass http://localhost:3000;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+        proxy_set_header Host $host;
+        proxy_cache_bypass $http_upgrade;
+    }
+}
+
+# Backend subdomain
+server {
+    listen 80;
+    listen [::]:80;
+
+    server_name api.radzsantillan.site;
+
+    location / {
+        proxy_pass http://localhost:3001;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+        proxy_set_header Host $host;
+        proxy_cache_bypass $http_upgrade;
+    }
+}
+EOT
+
+# Enable the site
+ln -sf /etc/nginx/sites-available/radzsantillan /etc/nginx/sites-enabled/radzsantillan
+
+# Test the configuration
+nginx -t
+
+# Restart nginx configuration
+systemctl restart nginx
+
+# Install certbot and the nginx plugin
+apt install -y certbot python3-certbot-nginx
+
+EOF
