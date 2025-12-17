@@ -1,0 +1,6 @@
+#nginx fix SSL CLOUDFLARE
+
+sudo apt update
+sudo apt install -y certbot python3-certbot-nginx
+sudo certbot --nginx -d app.radzsantillan.site -d api.radzsantillan.site
+
