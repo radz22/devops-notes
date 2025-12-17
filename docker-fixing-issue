@@ -1,0 +1,6 @@
+#Fixing push and pull in Docker
+
+#Local Machine 
+docker buildx build --platform linux/amd64 -t yourusername/imagename:tag --push .
+#VPS 
+docker pull yourusername/imagename:tag
